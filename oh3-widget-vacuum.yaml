@@ -1,0 +1,76 @@
+uid: tetsuo-repo-oh3-widget-vacuum
+version: 1.0.0
+tags: [vacuum,room,map,control]
+props:
+  parameters:
+    - description: json array with key value rooms
+      label: Rooms
+      name: rooms
+      required: true
+      type: TEXT
+    - description: Number of buttons for each row
+      label: Chunk size
+      name: chunkSize
+      required: false
+    - context: item
+      description: Item to send commands to vaccuum
+      label: Command-Item
+      name: commandItem
+      required: true
+      type: TEXT
+    - context: item
+      description: Map image item
+      label: Image-Item
+      name: imageItem
+      required: false
+      type: TEXT
+timestamp: Apr 11, 2021, 6:51:16 PM
+component: f7-block
+slots:
+  default:
+    - component: f7-row
+      config: {}
+      slots:
+        default:
+          - component: f7-col
+            slots:
+              default:
+                - component: oh-image-card
+                  config:
+                    item: =props.imageItem
+                    hidden: =props.imageItem == undefined
+    - component: oh-repeater
+      config:
+        sourceType: range
+        for: i
+        rangeStart: 0
+        rangeStop: =JSON.parse(props.rooms).length / props.chunkSize
+        fragment: true
+      slots:
+        default:
+          - component: f7-row
+            config: {}
+            slots:
+              default:
+                - component: oh-repeater
+                  config:
+                    for: roomChunk
+                    in: =JSON.parse(props.rooms).slice(loop.i * props.chunkSize, props.chunkSize * (loop.i + 1))
+                    fragment: true
+                  slots:
+                    default:
+                      - component: f7-col
+                        slots:
+                          default:
+                            - component: oh-list
+                              slots:
+                                default:
+                                  - component: oh-button
+                                    config:
+                                      iconF7: =loop.roomChunk.icon
+                                      iconSize: 1.2em
+                                      text: =loop.roomChunk.label
+                                      large: true
+                                      action: command
+                                      actionItem: =props.commandItem
+                                      actionCommand: ="app_segment_clean[" + loop.roomChunk.roomId + "]"
