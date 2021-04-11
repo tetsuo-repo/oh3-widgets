@@ -1,6 +1,10 @@
 uid: tetsuo-repo-oh3-widget-vacuum
-version: 1.0.0
-tags: [vacuum,room,map,control]
+version: 1.1.0
+tags:
+  - vacuum
+  - room
+  - map
+  - control
 props:
   parameters:
     - description: json array with key value rooms
@@ -24,7 +28,7 @@ props:
       name: imageItem
       required: false
       type: TEXT
-timestamp: Apr 11, 2021, 6:51:16 PM
+timestamp: Apr 11, 2021, 11:28:18 PM
 component: f7-block
 slots:
   default:
@@ -69,8 +73,28 @@ slots:
                                     config:
                                       iconF7: =loop.roomChunk.icon
                                       iconSize: 1.2em
+                                      active: '=vars["clean" + loop.roomChunk.roomId] ? true : false'
                                       text: =loop.roomChunk.label
                                       large: true
-                                      action: command
-                                      actionItem: =props.commandItem
-                                      actionCommand: ="app_segment_clean[" + loop.roomChunk.roomId + "]"
+                                      action: variable
+                                      actionVariable: ="clean" + loop.roomChunk.roomId
+                                      actionVariableValue: '=undefined === vars["clean" + loop.roomChunk.roomId] ? true : !vars["clean" + loop.roomChunk.roomId]'
+    - component: f7-row
+      config: {}
+      slots:
+        default:
+          - component: f7-col
+            slots:
+              default:
+                - component: oh-list
+                  slots:
+                    default:
+                      - component: oh-button
+                        config:
+                          iconF7: rocket
+                          text: Ausführen
+                          large: true
+                          action: toggle
+                          actionItem: =props.commandItem
+                          actionCommand: "='app_segment_clean[' + ((vars.clean16 ? '16,': '') + (vars.clean17 ? '17,': '') + (vars.clean18 ? '18,': '') + (vars.clean19 ? '19,': '') + (vars.clean20 ? '20,': '') + (vars.clean21 ? '21,': '') + (vars.clean22 ? '22,': '') + (vars.clean23 ? '23,': '') + (vars.clean24 ? '24,': '')).slice(0, -1) + ']'"
+                          actionCommandAlt: "stop_segment_clean"
