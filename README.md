@@ -15,6 +15,6 @@ Rooms are added as JSON String in the format shown here. Icons are https://frame
 	{"icon": "person","roomId": 22,"label": "Gäste-WC"},
 	{"icon": "dial","roomId": 18,"label": "Küche"},
 	{"icon": "bed_double","roomId": 16,"label": "Schlafzimmer"},
-	{"icon": "chat_bubble_2","roomId": 17,"label": "Wohnzimmer"},
+	{"icon": "chat_bubble_2","roomId": 17,"label": "Wohnzimmer"}
 ]
 ```
