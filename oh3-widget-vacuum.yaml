@@ -1,5 +1,5 @@
 uid: tetsuo-repo-oh3-widget-vacuum
-version: 1.1.0
+version: 1.2.0
 tags:
   - vacuum
   - room
@@ -7,7 +7,12 @@ tags:
   - control
 props:
   parameters:
-    - description: json array with key value rooms
+    - description: Prefix of item names. Look in your items for e.g. _CleaningMap and use everything before the underscore as prefix
+      label: Item prefix
+      name: itemPrefix
+      required: true
+      type: TEXT
+    - description: 'json array with key value rooms like this [{"icon": "chat_bubble_2","roomId": 16,"label": "Roomname"}]'
       label: Rooms
       name: rooms
       required: true
@@ -16,19 +21,7 @@ props:
       label: Chunk size
       name: chunkSize
       required: false
-    - context: item
-      description: Item to send commands to vaccuum
-      label: Command-Item
-      name: commandItem
-      required: true
-      type: TEXT
-    - context: item
-      description: Map image item
-      label: Image-Item
-      name: imageItem
-      required: false
-      type: TEXT
-timestamp: Apr 11, 2021, 11:28:18 PM
+timestamp: Apr 12, 2021, 11:50:25 PM
 component: f7-block
 slots:
   default:
@@ -36,13 +29,125 @@ slots:
       config: {}
       slots:
         default:
-          - component: f7-col
+          - component: f7-block
+            config:
+              style:
+                - width: 75%
+                - margin: 0
+                - padding: 0
             slots:
               default:
                 - component: oh-image-card
                   config:
-                    item: =props.imageItem
-                    hidden: =props.imageItem == undefined
+                    item: =props.itemPrefix+"_CleaningMap"
+                    hidden: =items[props.itemPrefix+"_CleaningMap"] === undefined
+                    style:
+                      borderRadius: 2em
+          - component: f7-block
+            config:
+              style:
+                - width: 25%
+                - margin: auto
+                - padding: 0
+            slots:
+              default:
+                - component: f7-gauge
+                  config:
+                    style:
+                      - width: 100%
+                      - height: 100%
+                    value: =(items[props.itemPrefix+"_Batterieladung"].state/100)
+                    valueText: =(items[props.itemPrefix+"_Batterieladung"].state)
+                    valueTextColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 75 ? "#ffe81e" : "#6ec071"'
+                    borderWidth: 18
+                    labelText: Ladung %
+                    borderColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 75 ? "#ffe81e" : "#6ec071"'
+                - component: f7-card
+                  slots:
+                    default:
+                      - component: f7-card-content
+                        slots:
+                          default:
+                            - component: f7-card-header
+                              slots:
+                                default:
+                                  - component: Label
+                                    config:
+                                      text: Dauer
+                                      style:
+                                        - fontWeight: 100
+                                        - color: rgb(136, 136, 136)
+                            - component: Label
+                              config:
+                                text: =items[props.itemPrefix+"_CleaningDuration"].state
+                                style:
+                                  height: 2.5em
+                                  line-height: 2.5em
+                                  text-align: center
+                                  color: var(--f7-theme-color)
+                                  font-weight: bold
+                                  font-size: 2em
+    - component: f7-row
+      slots:
+        default:
+          - component: f7-col
+            slots:
+              default:
+                - component: f7-card
+                  slots:
+                    default:
+                      - component: f7-card-header
+                        slots:
+                          default:
+                            - component: Label
+                              config:
+                                text: Aktionen
+                                style:
+                                  - fontWeight: 100
+                                  - color: rgb(136, 136, 136)
+                      - component: f7-card-content
+                        slots:
+                          default:
+                            - component: oh-button
+                              config:
+                                style:
+                                  height: 2.2em
+                                  line-height: 2.2em
+                                  font-size: 2em
+                                text: =items[props.itemPrefix+"_ControlVacuum"].state
+                                large: true
+                                action: options
+                                actionItem: =props.itemPrefix+"_ControlVacuum"
+                                item: =props.itemPrefix+"_ControlVacuum"
+          - component: f7-col
+            slots:
+              default:
+                - component: f7-card
+                  slots:
+                    default:
+                      - component: f7-card-header
+                        slots:
+                          default:
+                            - component: Label
+                              config:
+                                text: Saugkraft
+                                style:
+                                  - fontWeight: 100
+                                  - color: rgb(136, 136, 136)
+                      - component: f7-card-content
+                        slots:
+                          default:
+                            - component: oh-button
+                              config:
+                                style:
+                                  height: 2.2em
+                                  line-height: 2.2em
+                                  font-size: 2em
+                                text: =items[props.itemPrefix+"_ControlFanLevel"].state
+                                large: true
+                                action: options
+                                actionItem: =props.itemPrefix+"_ControlFanLevel"
+                                item: =props.itemPrefix+"_ControlFanLevel"
     - component: oh-repeater
       config:
         sourceType: range
@@ -66,19 +171,32 @@ slots:
                       - component: f7-col
                         slots:
                           default:
-                            - component: oh-list
+                            - component: f7-card
+                              config:
+                                style: 
+                                  margin: 2px
+                                  padding: 0
+                                  border-radius: 5px
                               slots:
                                 default:
-                                  - component: oh-button
-                                    config:
-                                      iconF7: =loop.roomChunk.icon
-                                      iconSize: 1.2em
-                                      active: '=vars["clean" + loop.roomChunk.roomId] ? true : false'
-                                      text: =loop.roomChunk.label
-                                      large: true
-                                      action: variable
-                                      actionVariable: ="clean" + loop.roomChunk.roomId
-                                      actionVariableValue: '=undefined === vars["clean" + loop.roomChunk.roomId] ? true : !vars["clean" + loop.roomChunk.roomId]'
+                                  - component: f7-card-content
+                                    slots:
+                                      default:
+                                        - component: oh-button
+                                          config:
+                                            iconF7: =loop.roomChunk.icon
+                                            iconSize: 1.2em
+                                            active: '=vars["clean" + loop.roomChunk.roomId] ? true : false'
+                                            text: =loop.roomChunk.label
+                                            large: true
+                                            action: variable
+                                            actionVariable: ="clean" + loop.roomChunk.roomId
+                                            actionVariableValue: '=undefined === vars["clean" + loop.roomChunk.roomId] ? true : !vars["clean" + loop.roomChunk.roomId]'
+                                            style:
+                                              height: 3em
+                                              line-height: 3em
+                                              text-align: center
+                                              font-size: 1.1em
     - component: f7-row
       config: {}
       slots:
@@ -86,15 +204,26 @@ slots:
           - component: f7-col
             slots:
               default:
-                - component: oh-list
+                - component: f7-card
                   slots:
                     default:
-                      - component: oh-button
+                      - component: f7-card-content
                         config:
-                          iconF7: rocket
-                          text: Ausführen
-                          large: true
-                          action: toggle
-                          actionItem: =props.commandItem
-                          actionCommand: "='app_segment_clean[' + ((vars.clean16 ? '16,': '') + (vars.clean17 ? '17,': '') + (vars.clean18 ? '18,': '') + (vars.clean19 ? '19,': '') + (vars.clean20 ? '20,': '') + (vars.clean21 ? '21,': '') + (vars.clean22 ? '22,': '') + (vars.clean23 ? '23,': '') + (vars.clean24 ? '24,': '')).slice(0, -1) + ']'"
-                          actionCommandAlt: "stop_segment_clean"
+                          style:
+                            padding: 0
+                        slots:
+                          default:
+                            - component: oh-button
+                              config:
+                                iconF7: rocket
+                                iconSize: 1.2em
+                                text: '=items[props.itemPrefix+"_ControlVacuum"].state === "vacuum" ? "Wird ausgeführt" : "Ausführen"'
+                                large: true
+                                action: command
+                                actionItem: =props.itemPrefix+"_ExecuteCommand"
+                                actionCommand: "='app_segment_clean[' + ((vars.clean16 ? '16,': '') + (vars.clean17 ? '17,': '') + (vars.clean18 ? '18,': '') + (vars.clean19 ? '19,': '') + (vars.clean20 ? '20,': '') + (vars.clean21 ? '21,': '') + (vars.clean22 ? '22,': '') + (vars.clean23 ? '23,': '') + (vars.clean24 ? '24,': '')).slice(0, -1) + ']'"
+                                style:
+                                  height: 2.5em
+                                  line-height: 2.5em
+                                  text-align: center
+                                  font-size: 2em
