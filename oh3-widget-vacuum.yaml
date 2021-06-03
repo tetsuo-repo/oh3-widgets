@@ -1,5 +1,5 @@
 uid: tetsuo-repo-oh3-widget-vacuum
-version: 1.2.0
+version: 1.3.0
 tags:
   - vacuum
   - room
@@ -21,7 +21,7 @@ props:
       label: Chunk size
       name: chunkSize
       required: false
-timestamp: Apr 12, 2021, 11:50:25 PM
+timestamp: Jun 3, 2021, 2:47:00 PM
 component: f7-block
 slots:
   default:
@@ -57,11 +57,26 @@ slots:
                       - width: 100%
                       - height: 100%
                     value: =(items[props.itemPrefix+"_Batterieladung"].state/100)
-                    valueText: =(items[props.itemPrefix+"_Batterieladung"].state)
-                    valueTextColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 75 ? "#ffe81e" : "#6ec071"'
+                    valueText: =(items[props.itemPrefix+"_Batterieladung"].state) + "%"
+                    valueTextColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 60 ? "#ffe81e" : "#6ec071"'
                     borderWidth: 18
-                    labelText: Ladung %
-                    borderColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 75 ? "#ffe81e" : "#6ec071"'
+                    labelText: '=items[props.itemPrefix+"_ControlVacuum"].state !== "dock"? "Batterie" : "Wird aufgeladen"'
+                    borderColor: '=items[props.itemPrefix+"_Batterieladung"].state < 25 ? "#f32617" : items[props.itemPrefix+"_Batterieladung"].state < 60 ? "#ffe81e" : "#6ec071"'
+                - component: oh-trend
+                  config:
+                    trendItem: =props.itemPrefix+"_Batterieladung"
+                    trendStrokeWidth: 2
+                    trendGradient:
+                      - "#6ec071"
+                    style:
+                      --f7-theme-color-bg-color: transparent
+                      background: transparent
+                      filter: opacity(20%)
+                      width: 100%
+                      height: 100%
+                      top: 0
+                      left: 0
+                      z-index: 0
                 - component: f7-card
                   slots:
                     default:
@@ -73,7 +88,7 @@ slots:
                                 default:
                                   - component: Label
                                     config:
-                                      text: Dauer
+                                      text: '=items[props.itemPrefix+"_ControlVacuum"].state === "vacuum" ? "Dauer" : "Letzte Dauer"'
                                       style:
                                         - fontWeight: 100
                                         - color: rgb(136, 136, 136)
@@ -87,7 +102,14 @@ slots:
                                   color: var(--f7-theme-color)
                                   font-weight: bold
                                   font-size: 2em
+                            - component: f7-progressbar
+                              config: 
+                                visible: =items[props.itemPrefix+"_ControlVacuum"].state === "vacuum"
+                                infinite: true
+                                class: color-blue
     - component: f7-row
+      config:
+        visible: =items[props.itemPrefix+"_ControlVacuum"].state !== "vacuum"
       slots:
         default:
           - component: f7-col
@@ -111,10 +133,10 @@ slots:
                             - component: oh-button
                               config:
                                 style:
-                                  height: 2.2em
-                                  line-height: 2.2em
+                                  height: 2.5em
+                                  line-height: 2.5em
                                   font-size: 2em
-                                text: =items[props.itemPrefix+"_ControlVacuum"].state
+                                text: =items[props.itemPrefix+"_ControlVacuum"].displayState
                                 large: true
                                 action: options
                                 actionItem: =props.itemPrefix+"_ControlVacuum"
@@ -140,10 +162,10 @@ slots:
                             - component: oh-button
                               config:
                                 style:
-                                  height: 2.2em
-                                  line-height: 2.2em
+                                  height: 2.5em
+                                  line-height: 2.5em
                                   font-size: 2em
-                                text: =items[props.itemPrefix+"_ControlFanLevel"].state
+                                text: =items[props.itemPrefix+"_ControlFanLevel"].displayState
                                 large: true
                                 action: options
                                 actionItem: =props.itemPrefix+"_ControlFanLevel"
@@ -155,6 +177,7 @@ slots:
         rangeStart: 0
         rangeStop: =JSON.parse(props.rooms).length / props.chunkSize
         fragment: true
+        visible: =items[props.itemPrefix+"_ControlVacuum"].state !== "vacuum"
       slots:
         default:
           - component: f7-row
@@ -172,14 +195,18 @@ slots:
                         slots:
                           default:
                             - component: f7-card
-                              config:
-                                style: 
-                                  margin: 2px
-                                  padding: 0
-                                  border-radius: 5px
+                              config: 
+                                style:
+                                  height: 3rem
+                                  line-height: 3rem
                               slots:
                                 default:
                                   - component: f7-card-content
+                                    config:
+                                      style:
+                                        padding: 0
+                                        marging: 0
+                                        height: 3rem
                                     slots:
                                       default:
                                         - component: oh-button
@@ -193,8 +220,8 @@ slots:
                                             actionVariable: ="clean" + loop.roomChunk.roomId
                                             actionVariableValue: '=undefined === vars["clean" + loop.roomChunk.roomId] ? true : !vars["clean" + loop.roomChunk.roomId]'
                                             style:
-                                              height: 3em
-                                              line-height: 3em
+                                              height: 3rem
+                                              line-height: 3rem
                                               text-align: center
                                               font-size: 1.1em
     - component: f7-row
@@ -215,6 +242,7 @@ slots:
                           default:
                             - component: oh-button
                               config:
+                                visible: =items[props.itemPrefix+"_ControlVacuum"].state !== "vacuum"
                                 iconF7: rocket
                                 iconSize: 1.2em
                                 text: '=items[props.itemPrefix+"_ControlVacuum"].state === "vacuum" ? "Wird ausgeführt" : "Ausführen"'
@@ -222,6 +250,21 @@ slots:
                                 action: command
                                 actionItem: =props.itemPrefix+"_ExecuteCommand"
                                 actionCommand: "='app_segment_clean[' + ((vars.clean16 ? '16,': '') + (vars.clean17 ? '17,': '') + (vars.clean18 ? '18,': '') + (vars.clean19 ? '19,': '') + (vars.clean20 ? '20,': '') + (vars.clean21 ? '21,': '') + (vars.clean22 ? '22,': '') + (vars.clean23 ? '23,': '') + (vars.clean24 ? '24,': '')).slice(0, -1) + ']'"
+                                style:
+                                  height: 2.5em
+                                  line-height: 2.5em
+                                  text-align: center
+                                  font-size: 2em
+                            - component: oh-button
+                              config:
+                                visible: =items[props.itemPrefix+"_ControlVacuum"].state === "vacuum"
+                                iconF7: stop_circle
+                                iconSize: 1.2em
+                                text: Zurück zum Dock
+                                large: true
+                                action: command
+                                actionItem: =props.itemPrefix+"_ExecuteCommand"
+                                actionCommand: ='app_charge'
                                 style:
                                   height: 2.5em
                                   line-height: 2.5em
