@@ -1,3 +1,12 @@
+# Deprecation Notice
+Hi Openhab-Community... 
+
+not using Openhab any more, so this is just an archive.
+Wont update it any more as I moved on.
+
+Best regards
+Tetsuo
+
 # oh3-widgets
 
 This repo consists of severeal custom widgets for OH3 main ui.
